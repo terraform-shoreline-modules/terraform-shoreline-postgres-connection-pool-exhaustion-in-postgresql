@@ -1,0 +1,154 @@
+{
+  "name": "connection_pool_exhaustion_in_postgresql",
+  "description": "Connection pool exhaustion is a common incident that occurs when an application is unable to create new database connections due to a high number of existing connections. This happens when the application's connection pooling configurations are inadequate and unable to handle the traffic. This incident can lead to degraded application performance or even application failure. To resolve this issue, the application's connection pooling configurations must be optimized to ensure that the connection pool can handle the application's traffic without exhausting its resources.",
+  "params": [
+    {
+      "name": "APPLICATION_LOG_FILE",
+      "value": ""
+    },
+    {
+      "name": "DATABASE_HOST",
+      "value": ""
+    },
+    {
+      "name": "DATABASE_USER",
+      "value": ""
+    },
+    {
+      "name": "NEW_MAX_CONNECTIONS",
+      "value": ""
+    },
+    {
+      "name": "DATABASE_PORT",
+      "value": ""
+    },
+    {
+      "name": "DATABASE_NAME",
+      "value": ""
+    },
+    {
+      "name": "DATABASE_PASSWORD",
+      "value": ""
+    },
+    {
+      "name": "APPLICATION_CONFIG_FILE",
+      "value": ""
+    },
+    {
+      "name": "HOST_NAME",
+      "value": ""
+    },
+    {
+      "name": "K8S_CLUSTER_NAME",
+      "value": ""
+    },
+    {
+      "name": "NAMESPACE",
+      "value": ""
+    }
+  ],
+  "cells": [
+    {
+      "name": "cell_1",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Connection pool exhaustion in PostgreSQL.\nConnection pool exhaustion is a common incident that occurs when an application is unable to create new database connections due to a high number of existing connections. This happens when the application's connection pooling configurations are inadequate and unable to handle the traffic. This incident can lead to degraded application performance or even application failure. To resolve this issue, the application's connection pooling configurations must be optimized to ensure that the connection pool can handle the application's traffic without exhausting its resources."
+    },
+    {
+      "name": "cell_2",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the maximum number of connections allowed in PostgreSQL"
+    },
+    {
+      "name": "cell_3",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo -u postgres psql -c \"SHOW max_connections;\"`"
+    },
+    {
+      "name": "cell_4",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the current number of connections in PostgreSQL"
+    },
+    {
+      "name": "cell_5",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo -u postgres psql -c \"SELECT count(*) FROM pg_stat_activity;\"`"
+    },
+    {
+      "name": "cell_6",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the number of idle connections in PostgreSQL"
+    },
+    {
+      "name": "cell_7",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `sudo -u postgres psql -c \"SELECT count(*) FROM pg_stat_activity WHERE state = 'idle';\"`"
+    },
+    {
+      "name": "cell_8",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the connection pool size in the application's configuration file"
+    },
+    {
+      "name": "cell_9",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep \"connection_pool_size\" ${APPLICATION_CONFIG_FILE}`"
+    },
+    {
+      "name": "cell_10",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the connection timeout setting in the application's configuration file"
+    },
+    {
+      "name": "cell_11",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep \"connection_timeout\" ${APPLICATION_CONFIG_FILE}`"
+    },
+    {
+      "name": "cell_12",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the maximum number of connections allowed by the application's connection pool"
+    },
+    {
+      "name": "cell_13",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `grep \"max_connections\" ${APPLICATION_CONFIG_FILE}`"
+    },
+    {
+      "name": "cell_14",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Check the application's logs for connection-related errors"
+    },
+    {
+      "name": "cell_15",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "(host | host_name=$HOST_NAME) union (pod | k8s_cluster_name=$K8S_CLUSTER_NAME | namespace=$NAMESPACE) | `tail -n 100 ${APPLICATION_LOG_FILE}`"
+    },
+    {
+      "name": "cell_16",
+      "type": "MARKDOWN",
+      "enabled": true,
+      "content": "## Increase the maximum number of connections allowed by the connection pool to ensure that the pool can handle the application's traffic without exhausting its resources."
+    },
+    {
+      "name": "cell_17",
+      "type": "OP_LANG",
+      "enabled": true,
+      "content": "host | host_name=$HOST_NAME | invoke_maxconn_config($DATABASE_HOST, $DATABASE_USER, $NEW_MAX_CONNECTIONS, $DATABASE_PORT, $DATABASE_NAME, $DATABASE_PASSWORD)"
+    }
+  ]
+}
